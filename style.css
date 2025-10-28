@@ -1,0 +1,110 @@
+body { 
+    font-family: sans-serif; 
+    background-color: #f0f0f0; 
+    margin: 0; 
+    display: flex;
+    flex-direction: column; /* Arrange items vertically */
+    justify-content: center; 
+    align-items: center; 
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box; /* Include padding in height/width */
+}
+
+/* New Upload Container Styling */
+.upload-container {
+    width: 90%;
+    max-width: 600px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.upload-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+#file-input {
+    flex-grow: 1;
+}
+#upload-button {
+    padding: 10px 15px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+#upload-button:hover {
+    background-color: #218838;
+}
+#upload-status {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+/* Modified Chat Container Styling */
+.chat-container { 
+    width: 90%; 
+    max-width: 600px; 
+    height: 70vh; /* Reduced height to make space for upload */
+    border: 1px solid #ccc; 
+    background-color: #fff; 
+    display: flex; 
+    flex-direction: column; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+}
+.chat-window { 
+    flex-grow: 1; 
+    overflow-y: auto; 
+    padding: 20px; 
+    border-bottom: 1px solid #ccc; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+}
+.input-area { 
+    display: flex; 
+    padding: 10px; 
+}
+#message-input { 
+    flex-grow: 1; 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    border-radius: 4px; 
+}
+#message-input:disabled {
+    background-color: #eee;
+}
+#send-button { 
+    padding: 10px 20px; 
+    margin-left: 10px; 
+    background-color: #007bff; 
+    color: white; 
+    border: none; 
+    cursor: pointer; 
+    border-radius: 4px; 
+}
+#send-button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+.message { 
+    max-width: 80%; 
+    padding: 10px 15px; 
+    border-radius: 12px; 
+    line-height: 1.5; 
+}
+.user-message { 
+    background-color: #e1f5fe; 
+    align-self: flex-end; 
+}
+.ai-message { 
+    background-color: #f1f1f1; 
+    align-self: flex-start; 
+}
