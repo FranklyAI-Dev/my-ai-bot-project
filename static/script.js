@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadButton.disabled = true;
 
         try {
-            const response = await fetch('http://127.0.0.1:5000/upload', {
+            const response = await fetch('/upload', {
                 method: 'POST',
                 body: formData
             });
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatHistory.push({ role: 'user', text: message });
 
         try {
-            const response = await fetch('http://127.0.0.1:5000/chat', {
+            const response = await fetch('/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ history: chatHistory })
