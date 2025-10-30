@@ -3,34 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat With Your Document</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Chat with Your Documents</title>
+    <!-- We now load style.css from the root, as Flask serves it from 'static' -->
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
-    <!-- We add a new section for file uploading -->
-    <div class="upload-container">
-        <h3>Chat with Your Document</h3>
-        <p>Upload a .txt or .pdf file to start.</p>
-        <div class="upload-controls">
+    <div class="container">
+        <!-- New section for selecting the document -->
+        <div class="document-selector-container">
+            <h2>Your Documents</h2>
+            <select id="document-selector">
+                <option value="">No document selected</option>
+            </select>
+            <button id="delete-document-button" disabled>Delete Selected</button>
+        </div>
+
+        <!-- This is the original upload box -->
+        <div class="upload-container">
+            <h3>Upload a New Document</h3>
+            <p>Upload a .txt or .pdf file to start.</p>
             <input type="file" id="file-input" accept=".txt,.pdf">
             <button id="upload-button">Upload and Process</button>
+            <div id="upload-status" class="status-message"></div>
         </div>
-        <p id="upload-status"></p>
-    </div>
 
-    <div class="chat-container">
-        <div class="chat-window" id="chat-window">
-            <div class="message ai-message">
-                Please upload a document above to begin.
+        <!-- This is the chat area -->
+        <div class="chat-container">
+            <div class="chat-window" id="chat-window">
+                <div class="message system-message">
+                    Please upload a document or select an existing one to begin.
+                </div>
+            </div>
+            <div class="input-area">
+                <input type="text" id="message-input" placeholder="Ask a question about your document..." disabled>
+                <button id="send-button" disabled>Send</button>
             </div>
         </div>
-        <div class="input-area">
-            <input type="text" id="message-input" placeholder="Ask a question about your document..." disabled>
-            <button id="send-button" disabled>Send</button>
-        </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- We load script.js from the root, as Flask serves it from 'static' -->
+    <script src="/script.js"></script>
 </body>
 </html>
+
