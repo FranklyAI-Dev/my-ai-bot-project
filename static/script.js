@@ -1,11 +1,18 @@
-// This special function tells the script to WAIT
-// until the entire HTML document is fully loaded.
+// Wait for the HTML to be fully loaded before running the script
 document.addEventListener('DOMContentLoaded', () => {
     
-    // This message will prove that the script is running correctly.
     console.log("Script loaded and DOM is ready.");
 
-    // Get references to all our new HTML elements
+    // --- NEW: Get or create a unique User ID for this browser ---
+    let userID = localStorage.getItem('userID');
+    if (!userID) {
+        userID = crypto.randomUUID(); // Generate a new unique ID
+        localStorage.setItem('userID', userID);
+    }
+    console.log("User ID:", userID);
+    // --- END NEW ---
+
+    // Get references to all our HTML elements
     const fileInput = document.getElementById('file-input');
     const uploadButton = document.getElementById('upload-button');
     const uploadStatus = document.getElementById('upload-status');
@@ -13,7 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageInput = document.getElementById('message-input');
     const chatWindow = document.getElementById('chat-window');
 
-    // --- NEW: Function to handle file upload ---
+    let chatHistory = []; // This array holds our conversation memory
+
+    // --- Function to handle file upload ---
     async function uploadDocument() {
         const file = fileInput.files[0];
         if (!file) {
@@ -23,11 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('userID', userID); // --- NEW: Add the userID to the request ---
 
         uploadStatus.textContent = 'Uploading and processing...';
         uploadButton.disabled = true;
 
         try {
+            // Use relative URL for deployment
             const response = await fetch('/upload', {
                 method: 'POST',
                 body: formData
@@ -41,10 +52,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             uploadStatus.textContent = 'File processed successfully. You can now chat!';
             
+            // Enable the chat controls
             messageInput.disabled = false;
             sendButton.disabled = false;
 
+            // Clear chat window and add first message
+            chatWindow.innerHTML = '';
             addMessage("Your document is ready. Ask me anything about it!", 'ai-message');
+            chatHistory = []; // Reset history for the new document
 
         } catch (error) {
             console.error("Error:", error);
@@ -54,21 +69,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- MODIFIED: Function to send a chat message ---
+    // --- Function to send a chat message ---
     async function sendMessage() {
         const message = messageInput.value.trim();
         if (message === "") return;
 
         addMessage(message, 'user-message');
+        
+        // Add user message to history
+        chatHistory.push({ role: 'user', text: message });
         messageInput.value = "";
 
-        chatHistory.push({ role: 'user', text: message });
-
         try {
+            // --- NEW: Send both history and userID ---
+            const payload = {
+                history: chatHistory,
+                userID: userID 
+            };
+            // --- END NEW ---
+
+            // Use relative URL for deployment
             const response = await fetch('/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ history: chatHistory })
+                body: JSON.stringify(payload) // Send the new payload
             });
 
             if (!response.ok) {
@@ -80,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const aiReply = data.reply;
             
             addMessage(aiReply, 'ai-message');
+            // Add AI message to history
             chatHistory.push({ role: 'model', text: aiReply });
 
         } catch (error) {
@@ -88,8 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // This function is unchanged
-    let chatHistory = []; // Moved this inside the DOMContentLoaded
+    // Helper function to add a message to the chat display
     function addMessage(text, className) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', className);
@@ -98,17 +122,16 @@ document.addEventListener('DOMContentLoaded', () => {
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
-    // Add event listeners for our two buttons
+    // --- Add event listeners for our buttons ---
     uploadButton.addEventListener('click', uploadDocument);
     sendButton.addEventListener('click', sendMessage);
+    
     messageInput.addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
-            // Check if send button is enabled before sending
-            if (!sendButton.disabled) {
+            if (!sendButton.disabled) { // Only send if not disabled
                 sendMessage();
             }
         }
     });
 
-}); // We close the DOMContentLoaded function here
-
+});
