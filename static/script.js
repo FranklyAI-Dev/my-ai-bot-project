@@ -3,15 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log("Script loaded and DOM is ready.");
 
-    // --- NEW: Get or create a unique User ID for this browser ---
-    let userID = localStorage.getItem('userID');
-    if (!userID) {
-        userID = crypto.randomUUID(); // Generate a new unique ID
-        localStorage.setItem('userID', userID);
-    }
-    console.log("User ID:", userID);
-    // --- END NEW ---
-
     // Get references to all our HTML elements
     const fileInput = document.getElementById('file-input');
     const uploadButton = document.getElementById('upload-button');
@@ -21,6 +12,58 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatWindow = document.getElementById('chat-window');
 
     let chatHistory = []; // This array holds our conversation memory
+    let userID = localStorage.getItem('userID');
+
+    // --- **** NEW FUNCTION **** ---
+    // --- Check if a document already exists for this user ---
+    async function checkDocumentStatus() {
+        if (!userID) {
+            // No user ID, so no document. Just wait for upload.
+            return;
+        }
+
+        try {
+            const response = await fetch('/check_document', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userID: userID })
+            });
+            
+            const data = await response.json();
+
+            if (data.exists) {
+                // SUCCESS! A document exists for this user.
+                uploadStatus.textContent = data.message; // e.g., "Welcome back!"
+                
+                // Enable the chat controls
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+
+                // Clear chat window and add first message
+                chatWindow.innerHTML = '';
+                addMessage("Welcome back! Ask me anything about your document.", 'ai-message');
+            }
+            // If it doesn't exist, we do nothing and wait for an upload.
+
+        } catch (error) {
+            console.error("Error checking document:", error);
+            // Don't block the user, just log the error
+        }
+    }
+    // --- **** END OF NEW FUNCTION **** ---
+
+
+    // --- Get or create a unique User ID for this browser ---
+    if (!userID) {
+        userID = crypto.randomUUID(); // Generate a new unique ID
+        localStorage.setItem('userID', userID);
+    }
+    console.log("User ID:", userID);
+    
+    // --- **** CALL THE NEW FUNCTION ON PAGE LOAD **** ---
+    checkDocumentStatus();
+    // --- **** END OF CALL **** ---
+
 
     // --- Function to handle file upload ---
     async function uploadDocument() {
@@ -32,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('userID', userID); // --- NEW: Add the userID to the request ---
+        formData.append('userID', userID); // Add the userID to the request
 
         uploadStatus.textContent = 'Uploading and processing...';
         uploadButton.disabled = true;
@@ -81,12 +124,11 @@ document.addEventListener('DOMContentLoaded', () => {
         messageInput.value = "";
 
         try {
-            // --- NEW: Send both history and userID ---
+            // Send both history and userID
             const payload = {
                 history: chatHistory,
                 userID: userID 
             };
-            // --- END NEW ---
 
             // Use relative URL for deployment
             const response = await fetch('/chat', {
@@ -135,3 +177,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 });
+

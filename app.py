@@ -35,10 +35,6 @@ db = firestore.client() # This is our connection to the Firestore database
 app = Flask(__name__, static_folder='static') 
 CORS(app)
 
-# --- DELETED: We no longer use this global variable ---
-# document_context = "" 
-# --- END DELETED ---
-
 
 # --- Step 3: Endpoint for File Uploads (Updated for Firestore) ---
 @app.route('/upload', methods=['POST'])
@@ -79,7 +75,8 @@ def upload_file():
         # and create a document inside it named after the userID.
         doc_ref = db.collection('documents').document(userID)
         doc_ref.set({
-            'text': file_content
+            'text': file_content,
+            'filename': file.filename # Let's save the filename too!
         })
         # --- END NEW ---
 
@@ -90,8 +87,32 @@ def upload_file():
         print(f"An error occurred during file processing: {e}")
         return jsonify({"error": f"Failed to process file: {e}"}), 500
 
+# --- **** NEW FUNCTION **** ---
+# --- Step 4: Endpoint to Check for an Existing Document ---
+@app.route('/check_document', methods=['POST'])
+def check_document():
+    try:
+        request_data = request.json
+        if 'userID' not in request_data:
+            return jsonify({"error": "No User ID provided"}), 400
+        
+        userID = request_data.get('userID')
+        doc_ref = db.collection('documents').document(userID)
+        doc = doc_ref.get()
 
-# --- Step 4: Chat Endpoint for RAG (Updated for Firestore) ---
+        if doc.exists:
+            filename = doc.to_dict().get('filename', 'your document')
+            return jsonify({"exists": True, "message": f"Welcome back! Ready to chat about {filename}."})
+        else:
+            return jsonify({"exists": False})
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return jsonify({"error": "Failed to check document"}), 500
+# --- **** END OF NEW FUNCTION **** ---
+
+
+# --- Step 5: Chat Endpoint for RAG (Updated for Firestore) ---
 @app.route('/chat', methods=['POST'])
 def chat():
     global model # We still need this
@@ -159,7 +180,7 @@ def chat():
         print(f"An error occurred: {e}")
         return jsonify({"error": "Failed to get response from AI"}), 500
 
-# --- Step 5: Routes to Serve the Frontend Files (No change) ---
+# --- Step 6: Routes to Serve the Frontend Files (No change) ---
 
 @app.route('/')
 def serve_index():
